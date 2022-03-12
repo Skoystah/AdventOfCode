@@ -2,51 +2,54 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Bingo {
     public static void main(String[] args) throws IOException {
 
-        BufferedReader objReader = new BufferedReader(new FileReader("/Users/geertdooms/Documents/repos/AdventOfCode/3 - Binary Diagnostic/src/input.txt"));
-        List<String> readings = new ArrayList<>();
+        BufferedReader objReader = new BufferedReader(new FileReader("/Users/geertdooms/Documents/repos/AdventOfCode/4 - Giant Squid/src/input.txt"));
+        List<Board> boards = new ArrayList<>();
 
+        //read bingo draws
+        int [] draws = Arrays.stream(objReader.readLine().split(",")).mapToInt(s -> Integer.parseInt(s)).toArray();
+
+        objReader.readLine();
         String input;
 
+        //read bingo boards
         while ((input = objReader.readLine()) != null) {
-            readings.add(input);
+            if (!input.isBlank()) {
+                int[][] newBoard = new int[5][5];
+                for (int i = 0; i < 5; i++) {
+                    int[] newRow = Arrays.stream(input.trim().split("\\s+")).mapToInt(s -> Integer.parseInt(s)).toArray();
+                    for (int j = 0; j < 5; j++) {
+                        newBoard[i][j] = newRow[j];
+                    }
+                    input = objReader.readLine();
+                }
+                boards.add(new Board(newBoard));
+            }
         }
 
-        int readingsLength = readings.get(0).length();
+        //perform bingo draw
+        int boardsWon = 0;
 
-        int[] ones = new int[readingsLength];
-        for (int i : ones) {
-            i = 0;
-        }
-
-        for (String reading : readings) {
-            for (int i = 0; i < readingsLength; i++) {
-                if (reading.charAt(i) == '1') {
-                    ones[i]++;
+        outerloop:
+        for (int d : draws) {
+            for (Board b : boards) {
+                if (b.hasWon != true) {
+                    if (b.checkHasWon(d)) {
+                        System.out.println("Winner! Value " + b.boardValue() * d);
+                        boardsWon++;
+                        //break outerloop;
+                    }
                 }
             }
-        }
-
-        char[] gamma = new char[ones.length];
-        char[] epsilon = new char[ones.length];
-
-        for (int i = 0; i < ones.length; i++) {
-            if (ones[i] > readings.size()/2) {
-                gamma[i] = '1';
-                epsilon[i] = '0';
-            } else {
-                gamma[i] = '0';
-                epsilon[i] = '1';
+            if (boardsWon == boards.size()) {
+                break outerloop;
             }
         }
-        int gammavalue = Integer.parseInt(String.valueOf(gamma), 2);
-        int epsilonvalue = Integer.parseInt(String.valueOf(epsilon), 2);
-        System.out.println(gammavalue*epsilonvalue );
-
     }
 }
 
